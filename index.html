@@ -15,6 +15,8 @@
             min-height: 100vh;
             color: #e2e8f0;
             -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         .glass {
@@ -34,10 +36,6 @@
         .btn-primary {
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             transition: all 0.3s ease;
-        }
-
-        .btn-primary:active {
-            transform: scale(0.98);
         }
 
         .topic-card {
@@ -71,95 +69,101 @@
 
         @keyframes spinner {
             0% { transform: rotate(0deg); }
-            100% { transform: rotate(3600deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .hidden { display: none; }
         
-        /* Mobile Specific Overrides */
         @media (max-width: 640px) {
-            .section-padding { padding: 1.5rem !important; }
-            h1 { font-size: 2.5rem !important; }
-            /* Fixed the incorrect property name 'grid-template-cols' to 'grid-template-columns' */
-            .topic-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            body { padding: 1rem; }
+            h1 { font-size: 2.2rem !important; }
+            .mobile-topic-grid { 
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.75rem !important;
+            }
+            #nav-actions {
+                position: relative !important;
+                margin-bottom: 1rem;
+                display: flex;
+                justify-content: center;
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <div class="max-w-4xl mx-auto flex flex-col items-center">
-        <!-- Centered Header -->
-        <header class="w-full flex flex-col items-center text-center mb-6 md:mb-10 relative">
-            <div id="nav-actions" class="hidden absolute left-0 top-1/2 -translate-y-1/2 sm:static sm:translate-y-0 sm:mb-4">
-                <button onclick="fetchLeaderboard()" class="p-2 sm:px-4 sm:py-2 glass rounded-lg text-xs sm:text-sm hover:bg-white/5 transition-all">
-                    <i class="fa-solid fa-ranking-star sm:mr-2 text-amber-400"></i><span class="hidden sm:inline">Leaderboard</span>
+        <header class="w-full flex flex-col items-center text-center mb-6 md:mb-10">
+            <div id="nav-actions" class="hidden sm:mb-4">
+                <button onclick="fetchLeaderboard()" class="px-6 py-2 glass rounded-full text-xs font-bold hover:bg-white/10 transition-all border border-blue-500/30">
+                    <i class="fa-solid fa-ranking-star mr-2 text-amber-400"></i>Leaderboard
                 </button>
             </div>
             
-            <h1 class="text-4xl md:text-5xl font-black tracking-tighter mb-1">
+            <h1 class="text-4xl md:text-6xl font-black tracking-tighter mb-1">
                 <span class="gradient-text">BRAINY</span>WORLD
             </h1>
             <p class="text-slate-400 font-medium tracking-widest uppercase text-[10px] md:text-xs">Unleash your intelligence</p>
         </header>
 
-        <!-- Notification Box -->
         <div id="notification" class="hidden fixed top-4 right-4 left-4 sm:left-auto z-[200] p-4 rounded-xl glass border-l-4 border-blue-500 shadow-2xl">
             <p id="notification-text" class="text-sm font-medium"></p>
         </div>
 
-        <!-- Section: Login -->
-        <section id="section-login" class="w-full glass rounded-2xl p-6 md:p-8 max-w-md mx-auto">
-            <h2 class="text-xl md:text-2xl font-bold mb-6 text-center text-blue-400">Welcome Back</h2>
+        <!-- Login Section -->
+        <section id="section-login" class="w-full glass rounded-3xl p-6 md:p-8 max-w-md mx-auto">
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-center text-blue-400">Welcome</h2>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Username</label>
-                    <input type="text" id="login-username" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Your name">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1 ml-1">Username</label>
+                    <input type="text" id="login-username" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Your name">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Password</label>
-                    <input type="password" id="login-password" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="••••••••">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1 ml-1">Password</label>
+                    <input type="password" id="login-password" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="••••••••">
                 </div>
-                <button onclick="handleLogin()" class="w-full btn-primary py-4 rounded-xl font-bold text-lg mt-2">Sign In</button>
+                <button onclick="handleLogin()" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg shadow-blue-500/20">Sign In</button>
             </div>
         </section>
 
-        <!-- Section: Topic Selection -->
-        <section id="section-topic" class="hidden w-full glass rounded-2xl p-6 md:p-8 max-w-2xl mx-auto">
+        <!-- Topic Selection Section -->
+        <section id="section-topic" class="hidden w-full glass rounded-3xl p-6 md:p-8 max-w-2xl mx-auto">
             <div id="user-welcome" class="mb-2 text-lg font-semibold text-center text-blue-400"></div>
             <h2 class="text-xl md:text-2xl font-bold mb-6 text-center">Choose Your Challenge</h2>
             
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-6">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mobile-topic-grid mb-6">
                 <div onclick="handleTopicSelect('MATH')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
-                    <i class="fa-solid fa-calculator text-xl md:text-2xl mb-2 text-blue-400"></i>
-                    <div class="font-bold text-xs md:text-sm">MATH</div>
+                    <i class="fa-solid fa-calculator text-2xl mb-2 text-blue-400"></i>
+                    <div class="font-bold text-xs">MATH</div>
                 </div>
                 <div onclick="handleTopicSelect('Computer')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
-                    <i class="fa-solid fa-laptop-code text-xl md:text-2xl mb-2 text-purple-400"></i>
-                    <div class="font-bold text-xs md:text-sm">Computer</div>
+                    <i class="fa-solid fa-laptop-code text-2xl mb-2 text-purple-400"></i>
+                    <div class="font-bold text-xs">Computer</div>
                 </div>
                 <div onclick="handleTopicSelect('Psychology')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
-                    <i class="fa-solid fa-brain text-xl md:text-2xl mb-2 text-pink-400"></i>
-                    <div class="font-bold text-xs md:text-sm">Psychology</div>
+                    <i class="fa-solid fa-brain text-2xl mb-2 text-pink-400"></i>
+                    <div class="font-bold text-xs">Psychology</div>
                 </div>
                 <div onclick="handleTopicSelect('Science')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
-                    <i class="fa-solid fa-flask text-xl md:text-2xl mb-2 text-green-400"></i>
-                    <div class="font-bold text-xs md:text-sm">Science</div>
+                    <i class="fa-solid fa-flask text-2xl mb-2 text-green-400"></i>
+                    <div class="font-bold text-xs">Science</div>
                 </div>
                 <div onclick="handleTopicSelect('History')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
-                    <i class="fa-solid fa-landmark text-xl md:text-2xl mb-2 text-amber-400"></i>
-                    <div class="font-bold text-xs md:text-sm">History</div>
+                    <i class="fa-solid fa-landmark text-2xl mb-2 text-amber-400"></i>
+                    <div class="font-bold text-xs">History</div>
                 </div>
                 <div onclick="handleTopicSelect('General Knowledge')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
-                    <i class="fa-solid fa-earth-americas text-xl md:text-2xl mb-2 text-teal-400"></i>
-                    <div class="font-bold text-xs md:text-sm">GK</div>
+                    <i class="fa-solid fa-earth-americas text-2xl mb-2 text-teal-400"></i>
+                    <div class="font-bold text-xs">GK</div>
                 </div>
                 <div onclick="handleTopicSelect('Literature')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
-                    <i class="fa-solid fa-book-open text-xl md:text-2xl mb-2 text-red-400"></i>
-                    <div class="font-bold text-xs md:text-sm">Literature</div>
+                    <i class="fa-solid fa-book-open text-2xl mb-2 text-red-400"></i>
+                    <div class="font-bold text-xs">Literature</div>
                 </div>
                 <div onclick="toggleCustomTopic()" class="topic-card p-4 md:p-6 rounded-2xl text-center">
-                    <i class="fa-solid fa-plus text-xl md:text-2xl mb-2 text-slate-400"></i>
-                    <div class="font-bold text-xs md:text-sm">Other</div>
+                    <i class="fa-solid fa-plus text-2xl mb-2 text-slate-400"></i>
+                    <div class="font-bold text-xs">Other</div>
                 </div>
             </div>
 
@@ -169,63 +173,63 @@
             </div>
         </section>
 
-        <!-- Section: Quiz -->
-        <section id="section-quiz" class="hidden w-full glass rounded-2xl p-6 md:p-8 max-w-2xl mx-auto">
+        <!-- Quiz Section -->
+        <section id="section-quiz" class="hidden w-full glass rounded-3xl p-6 md:p-8 max-w-2xl mx-auto">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
-                <span id="quiz-progress" class="text-blue-400 font-bold text-xs md:text-sm tracking-tight order-2 sm:order-1">Question 1 of 10</span>
-                <div class="h-2 w-full sm:w-32 bg-slate-800 rounded-full overflow-hidden order-1 sm:order-2">
+                <div class="flex flex-col">
+                    <span id="quiz-progress" class="text-blue-400 font-bold text-xs tracking-widest uppercase mb-1">Question 1 of 10</span>
+                    <span id="live-timer" class="text-slate-500 font-black text-[10px] tracking-widest uppercase">Time: 0s</span>
+                </div>
+                <div class="h-2 w-full sm:w-32 bg-slate-800 rounded-full overflow-hidden">
                     <div id="progress-bar" class="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out" style="width: 10%;"></div>
                 </div>
             </div>
             
-            <div class="mb-8 min-h-[80px]">
-                <p id="question-text" class="text-lg md:text-xl font-semibold leading-relaxed text-slate-100"></p>
+            <div class="mb-8 min-h-[100px]">
+                <p id="question-text" class="text-xl md:text-2xl font-bold leading-tight text-slate-100"></p>
             </div>
 
-            <div id="options-container" class="grid gap-3 md:gap-4">
-                <!-- Options populated by JS -->
-            </div>
+            <div id="options-container" class="grid gap-3"></div>
 
-            <div class="flex mt-8">
-                <button id="next-btn" onclick="handleNextQuestion()" class="w-full sm:w-auto sm:ml-auto px-10 py-4 btn-primary rounded-xl font-black text-xs md:text-sm tracking-widest uppercase">Next Question</button>
+            <div class="flex flex-col sm:flex-row gap-3 mt-8">
+                <button id="back-btn" onclick="handlePrevQuestion()" class="hidden w-full sm:w-auto px-8 py-4 glass border border-white/10 rounded-2xl font-bold text-xs tracking-widest uppercase hover:bg-white/5">Back</button>
+                <button id="next-btn" onclick="handleNextQuestion()" class="w-full sm:w-auto sm:ml-auto px-10 py-4 btn-primary rounded-2xl font-black text-xs tracking-widest uppercase">Next Question</button>
             </div>
         </section>
 
-        <!-- Section: Results -->
-        <section id="section-results" class="hidden w-full glass rounded-2xl p-8 md:p-10 max-w-md mx-auto text-center">
+        <!-- Results Section -->
+        <section id="section-results" class="hidden w-full glass rounded-3xl p-8 md:p-10 max-w-md mx-auto text-center">
             <div class="mb-6">
-                <div class="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-blue-500/20 border-4 border-blue-500 mb-4">
-                    <i class="fa-solid fa-trophy text-3xl md:text-4xl text-blue-400"></i>
+                <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-blue-500/10 border-4 border-blue-500/30 mb-4 shadow-xl shadow-blue-500/10">
+                    <i class="fa-solid fa-trophy text-4xl text-blue-400"></i>
                 </div>
-                <h2 class="text-2xl md:text-3xl font-bold mb-2">Quiz Complete!</h2>
-                <p class="text-slate-400 text-sm">Your performance:</p>
+                <h2 class="text-3xl font-bold mb-1">Quiz Complete!</h2>
+                <p id="time-taken" class="text-slate-500 text-[10px] uppercase font-black tracking-widest mb-4">Total Time: 0s</p>
             </div>
             
-            <div id="final-score" class="text-6xl md:text-7xl font-black mb-8 gradient-text tracking-tighter">0/10</div>
+            <div id="final-score" class="text-7xl font-black mb-8 gradient-text tracking-tighter">0/10</div>
 
-            <button onclick="resetToTopics()" class="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold transition-all">Try Another Topic</button>
+            <button onclick="resetToTopics()" class="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-bold transition-all">Try Another Topic</button>
         </section>
 
-        <!-- Modal: Leaderboard -->
+        <!-- Leaderboard Modal -->
         <div id="modal-leaderboard" class="hidden fixed inset-0 z-[110] bg-slate-950/95 flex items-center justify-center p-4">
-            <div class="glass w-full max-w-md rounded-2xl overflow-hidden">
+            <div class="glass w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
                 <div class="p-5 border-b border-slate-700/50 flex justify-between items-center bg-white/5">
                     <h2 class="text-lg font-bold"><i class="fa-solid fa-crown mr-2 text-amber-400"></i>Global Rankings</h2>
                     <button onclick="document.getElementById('modal-leaderboard').classList.add('hidden')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                 </div>
-                <div id="leaderboard-content" class="p-4 md:p-6 max-h-[70vh] overflow-y-auto">
-                    <!-- Dynamic content -->
-                </div>
+                <div id="leaderboard-content" class="p-4 md:p-6 max-h-[70vh] overflow-y-auto"></div>
             </div>
         </div>
 
-        <!-- Loader Overlay -->
+        <!-- Loading Overlay -->
         <div id="loading-overlay" class="hidden fixed inset-0 z-[120] bg-slate-950/90 flex items-center justify-center p-6">
             <div class="flex flex-col items-center text-center">
                 <div class="loader ease-linear rounded-full border-4 border-t-4 border-slate-800 h-10 w-10 mb-4"></div>
-                <p class="text-blue-400 font-bold tracking-widest uppercase text-[10px] animate-pulse">Processing Quiz Data...</p>
+                <p class="text-blue-400 font-bold tracking-widest uppercase text-[10px] animate-pulse">Syncing data...</p>
             </div>
         </div>
     </div>
@@ -241,7 +245,9 @@
             currentQuestionIndex: 0,
             userAnswers: [],
             questionId: null,
-            currentAnswer: null
+            startTime: null,
+            timerInterval: null,
+            secondsElapsed: 0
         };
 
         const showSection = (id) => {
@@ -249,7 +255,7 @@
                 document.getElementById(s).classList.add('hidden');
             });
             document.getElementById(id).classList.remove('hidden');
-            window.scrollTo(0, 0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         const toggleLoading = (show) => {
@@ -264,11 +270,13 @@
         };
 
         function resetToTopics() {
+            clearInterval(state.timerInterval);
             state.questions = [];
             state.currentQuestionIndex = 0;
             state.userAnswers = [];
-            state.currentAnswer = null;
             state.quizzId = null;
+            state.startTime = null;
+            state.secondsElapsed = 0;
             showSection('section-topic');
         }
 
@@ -278,6 +286,16 @@
             if(!input.classList.contains('hidden')) {
                 document.getElementById('topic-name-custom').focus();
             }
+        }
+
+        function startLiveTimer() {
+            clearInterval(state.timerInterval);
+            state.secondsElapsed = 0;
+            document.getElementById('live-timer').innerText = `Time: 0s`;
+            state.timerInterval = setInterval(() => {
+                state.secondsElapsed++;
+                document.getElementById('live-timer').innerText = `Time: ${state.secondsElapsed}s`;
+            }, 1000);
         }
 
         async function fetchLeaderboard() {
@@ -290,25 +308,31 @@
                 if (response.ok) {
                     const data = await response.json();
                     const list = data.Leaderboard || [];
-                    
                     if (list.length === 0) {
                         content.innerHTML = '<p class="text-center py-8 text-slate-400">No entries yet.</p>';
                         return;
                     }
-                    
                     let html = '<div class="space-y-3">';
                     list.forEach((entry, idx) => {
                         const rankColor = idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-orange-400' : 'text-slate-500';
+                        const score = entry["Score"] || 0;
+                        const timeVal = entry["Time"] ? Math.floor(entry["Time"]) : 0;
+                        const userName = entry["User Name"] || 'Anonymous';
+                        const topic = entry["Quizz Topic"] || 'General';
+
                         html += `
                             <div class="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5">
                                 <div class="flex items-center space-x-4 overflow-hidden">
                                     <span class="font-black text-lg ${rankColor} w-6 text-center">${idx + 1}</span>
                                     <div class="flex flex-col truncate">
-                                        <span class="font-bold truncate text-slate-100 text-sm">${entry["User Name"] || 'Anonymous'}</span>
-                                        <span class="text-[9px] text-slate-500 uppercase font-black tracking-widest truncate">${entry["Quizz Topic"] || 'General'}</span>
+                                        <span class="font-bold truncate text-slate-100 text-sm">${userName}</span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-[9px] text-slate-500 uppercase font-black tracking-widest truncate">${topic}</span>
+                                            <span class="text-[9px] text-blue-400/60 uppercase font-black tracking-widest">• ${timeVal}s</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="font-black text-blue-400 ml-2">${entry["Score"] || 0}/10</div>
+                                <div class="font-black text-blue-400 ml-2 whitespace-nowrap">${score}/10</div>
                             </div>
                         `;
                     });
@@ -323,11 +347,9 @@
         function parseQuestions(rawText) {
             const questions = [];
             const qBlocks = rawText.split(/\n\s*\d+\.\s+/).filter(q => q.trim().length > 0);
-            
             qBlocks.forEach(block => {
                 const cleanedBlock = block.replace(/[A-D][\)\.]\s/g, '');
                 const lines = cleanedBlock.split('\n').filter(l => l.trim().length > 0);
-                
                 if (lines.length > 1) {
                     const questionText = lines[0].trim();
                     const options = lines.slice(1, 5).map(opt => opt.trim());
@@ -341,9 +363,7 @@
         async function handleLogin() {
             const user_name = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
-
             if (!user_name || !password) return showNotify("Enter credentials");
-
             toggleLoading(true);
             try {
                 const response = await fetch(`${BASE_URL}/BRAINYWORLD/Login`, {
@@ -351,26 +371,19 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_name, password })
                 });
-
                 if (response.ok) {
                     const data = await response.json();
                     state.user = { id: data.User_id, name: data.User_name };
-                    document.getElementById('user-welcome').innerText = `Hey, ${state.user.name}!`;
+                    document.getElementById('user-welcome').innerText = `Welcome, ${state.user.name}!`;
                     document.getElementById('nav-actions').classList.remove('hidden');
                     showSection('section-topic');
-                } else {
-                    showNotify("Invalid login");
-                }
-            } catch (err) {
-                showNotify("Server unreachable");
-            } finally {
-                toggleLoading(false);
-            }
+                } else { showNotify("Invalid login"); }
+            } catch (err) { showNotify("Server unreachable"); }
+            finally { toggleLoading(false); }
         }
 
         async function handleTopicSelect(topicName) {
             if (!topicName) return showNotify("Select a topic");
-
             toggleLoading(true);
             try {
                 const response = await fetch(`${BASE_URL}/BRAINYWORLD/choose_quizz`, {
@@ -378,18 +391,14 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ quizz_name: topicName, user_id: state.user.id })
                 });
-
                 if (response.ok) {
                     const data = await response.json();
                     state.quizzId = data['Quizz Id'];
                     state.quizzTopic = data['Quizz Choice'];
                     await fetchQuestions();
                 }
-            } catch (err) {
-                showNotify("Network Error");
-            } finally {
-                toggleLoading(false);
-            }
+            } catch (err) { showNotify("Network Error"); }
+            finally { toggleLoading(false); }
         }
 
         async function fetchQuestions() {
@@ -400,94 +409,103 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ quiz_id: state.quizzId })
                 });
-
                 if (response.ok) {
                     const data = await response.json();
                     state.questions = parseQuestions(data.Questions);
                     state.questionId = data['Question ID'];
+                    state.startTime = data['Starting time']; 
                     state.currentQuestionIndex = 0;
-                    state.userAnswers = [];
+                    state.userAnswers = Array(10).fill(null);
                     renderQuestion();
                     showSection('section-quiz');
+                    startLiveTimer();
                 }
-            } catch (err) {
-                showNotify("Error fetching questions");
-            } finally {
-                toggleLoading(false);
-            }
+            } catch (err) { showNotify("Error fetching questions"); }
+            finally { toggleLoading(false); }
         }
 
         function renderQuestion() {
             const qObj = state.questions[state.currentQuestionIndex];
             if (!qObj) return;
-
             document.getElementById('question-text').innerText = qObj.text;
             document.getElementById('quiz-progress').innerText = `Question ${state.currentQuestionIndex + 1} of 10`;
-            document.getElementById('progress-bar').style.width = `${(state.currentQuestionIndex + 1) * 10}%`;
-
+            document.getElementById('progress-bar').style.width = `${((state.currentQuestionIndex + 1) / 10) * 100}%`;
             const container = document.getElementById('options-container');
             container.innerHTML = '';
-
+            const savedAnswer = state.userAnswers[state.currentQuestionIndex];
             qObj.options.forEach((optText, index) => {
                 const val = index + 1;
                 const btn = document.createElement('button');
-                btn.className = 'option-btn w-full p-4 md:p-5 rounded-2xl text-left font-semibold flex justify-between items-center group transition-all duration-150';
-                
+                btn.className = `option-btn w-full p-4 md:p-5 rounded-2xl text-left font-semibold flex justify-between items-center group transition-all duration-150 ${savedAnswer === val ? 'selected' : ''}`;
                 const letter = String.fromCharCode(65 + index);
-                btn.innerHTML = `
-                    <div class="flex items-center pr-2">
-                        <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center mr-4 text-xs font-black group-hover:bg-blue-500 transition-colors">${letter}</span>
-                        <span class="text-slate-100 text-sm md:text-base leading-snug">${optText}</span>
-                    </div>
-                `;
-                
+                btn.innerHTML = `<div class="flex items-center pr-2"><span class="flex-shrink-0 w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center mr-4 text-xs font-black group-hover:bg-blue-500 transition-colors">${letter}</span><span class="text-slate-100 text-sm md:text-base leading-snug">${optText}</span></div>`;
                 btn.onclick = () => {
                     document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
                     btn.classList.add('selected');
-                    state.currentAnswer = val;
+                    state.userAnswers[state.currentQuestionIndex] = val;
                 };
                 container.appendChild(btn);
             });
-            
-            state.currentAnswer = null;
+            document.getElementById('back-btn').classList.toggle('hidden', state.currentQuestionIndex === 0);
             document.getElementById('next-btn').innerText = state.currentQuestionIndex === 9 ? "Finish Quiz" : "Next Question";
         }
 
-        async function handleNextQuestion() {
-            if (state.currentAnswer === null) return showNotify("Pick an answer");
-            state.userAnswers.push(state.currentAnswer);
-
-            if (state.currentQuestionIndex < 9) {
-                state.currentQuestionIndex++;
+        function handlePrevQuestion() {
+            if (state.currentQuestionIndex > 0) {
+                state.currentQuestionIndex--;
                 renderQuestion();
-            } else {
-                submitFinalResults();
             }
         }
 
+        async function handleNextQuestion() {
+            if (state.userAnswers[state.currentQuestionIndex] === null) return showNotify("Pick an answer");
+            if (state.currentQuestionIndex < 9) {
+                state.currentQuestionIndex++;
+                renderQuestion();
+            } else { submitFinalResults(); }
+        }
+
         async function submitFinalResults() {
+            clearInterval(state.timerInterval);
             toggleLoading(true);
             try {
+                let sanitizedTime = state.startTime;
+                if (sanitizedTime && sanitizedTime.includes('T')) {
+                    sanitizedTime = sanitizedTime.replace('T', ' ').split('.')[0];
+                }
+
+                const payload = {
+                    user_id: String(state.user.id),
+                    quizz_id: String(state.quizzId),
+                    question_id: String(state.questionId),
+                    answer: state.userAnswers,
+                    time: sanitizedTime
+                };
+
                 const response = await fetch(`${BASE_URL}/BRAINYWORLD/result_check`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: state.user.id,
-                        quizz_id: state.quizzId,
-                        question_id: state.questionId,
-                        answer: state.userAnswers
-                    })
+                    body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    document.getElementById('final-score').innerText = data.Result || "0/10";
+                    document.getElementById('final-score').innerText = (data.Result || "0") + "/10";
+                    document.getElementById('time-taken').innerText = `Total Time: ${Math.floor(data['Total time'] || state.secondsElapsed)}s`;
                     showSection('section-results');
+                    document.getElementById('nav-actions').classList.remove('hidden');
+                } else {
+                    const errorData = await response.json();
+                    console.error("Submission Error:", errorData);
+                    showNotify("Submission error. Try again.");
+                    // Resume timer if it failed
+                    startLiveTimer(); 
                 }
-            } catch (err) {
-                showNotify("Sync error");
-            } finally {
-                toggleLoading(false);
+            } catch (err) { 
+                showNotify("Connection error"); 
+                startLiveTimer();
+            } finally { 
+                toggleLoading(false); 
             }
         }
     </script>
