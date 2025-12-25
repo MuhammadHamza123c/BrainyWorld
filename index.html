@@ -240,14 +240,15 @@
         let state = {
             user: null,
             quizzId: null,
-            quizzTopic: null,
+            quizzTopic: null, 
             questions: [],
             currentQuestionIndex: 0,
             userAnswers: [],
             questionId: null,
             startTime: null,
             timerInterval: null,
-            secondsElapsed: 0
+            secondsElapsed: 0,
+            gameName: "BRAINYWORLD" 
         };
 
         const showSection = (id) => {
@@ -255,6 +256,16 @@
                 document.getElementById(s).classList.add('hidden');
             });
             document.getElementById(id).classList.remove('hidden');
+
+            // Hide Leaderboard button specifically during the quiz
+            const nav = document.getElementById('nav-actions');
+            if (id === 'section-quiz') {
+                nav.classList.add('hidden');
+            } else if (state.user) {
+                // Show only if user is logged in
+                nav.classList.remove('hidden');
+            }
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
@@ -303,22 +314,31 @@
             const content = document.getElementById('leaderboard-content');
             content.innerHTML = '<p class="text-center py-8 animate-pulse text-sm text-slate-500 tracking-widest uppercase font-bold">Updating Rankings...</p>';
             
+            const queryName = state.quizzTopic || state.gameName || "MATH";
+
             try {
-                const response = await fetch(`${BASE_URL}/BRAINWORLD/Leaderboard`);
+                const response = await fetch(`${BASE_URL}/BRAINWORLD/Leaderboard`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game_name: queryName })
+                });
+                
                 if (response.ok) {
                     const data = await response.json();
                     const list = data.Leaderboard || [];
+                    
                     if (list.length === 0) {
-                        content.innerHTML = '<p class="text-center py-8 text-slate-400">No entries yet.</p>';
+                        content.innerHTML = `<p class="text-center py-8 text-slate-400">No entries yet for ${queryName}.</p>`;
                         return;
                     }
+
                     let html = '<div class="space-y-3">';
                     list.forEach((entry, idx) => {
                         const rankColor = idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-orange-400' : 'text-slate-500';
                         const score = entry["Score"] || 0;
-                        const timeVal = entry["Time"] ? Math.floor(entry["Time"]) : 0;
+                        const timeVal = entry["Time"] ? Math.floor(parseFloat(entry["Time"])) : 0;
                         const userName = entry["User Name"] || 'Anonymous';
-                        const topic = entry["Quizz Topic"] || 'General';
+                        const topic = entry["Quizz Topic"] || queryName;
 
                         html += `
                             <div class="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5">
@@ -338,6 +358,8 @@
                     });
                     html += '</div>';
                     content.innerHTML = html;
+                } else {
+                    content.innerHTML = '<p class="text-center text-red-400 py-4">Error loading data</p>';
                 }
             } catch (err) {
                 content.innerHTML = '<p class="text-center text-red-400 py-4">Network Error</p>';
@@ -375,7 +397,6 @@
                     const data = await response.json();
                     state.user = { id: data.User_id, name: data.User_name };
                     document.getElementById('user-welcome').innerText = `Welcome, ${state.user.name}!`;
-                    document.getElementById('nav-actions').classList.remove('hidden');
                     showSection('section-topic');
                 } else { showNotify("Invalid login"); }
             } catch (err) { showNotify("Server unreachable"); }
@@ -394,7 +415,14 @@
                 if (response.ok) {
                     const data = await response.json();
                     state.quizzId = data['Quizz Id'];
-                    state.quizzTopic = data['Quizz Choice'];
+                    state.quizzTopic = data['Quizz Choice'] || topicName;
+                    
+                    const dynamicKeys = Object.keys(data);
+                    const gameKey = dynamicKeys.find(k => k === 'BRAINYWORLD' || (k !== 'Quizz Id' && k !== 'User_name' && k !== 'User_id' && k !== 'Quizz Choice'));
+                    if (gameKey) {
+                        state.gameName = gameKey;
+                    }
+
                     await fetchQuestions();
                 }
             } catch (err) { showNotify("Network Error"); }
@@ -493,12 +521,8 @@
                     document.getElementById('final-score').innerText = (data.Result || "0") + "/10";
                     document.getElementById('time-taken').innerText = `Total Time: ${Math.floor(data['Total time'] || state.secondsElapsed)}s`;
                     showSection('section-results');
-                    document.getElementById('nav-actions').classList.remove('hidden');
                 } else {
-                    const errorData = await response.json();
-                    console.error("Submission Error:", errorData);
                     showNotify("Submission error. Try again.");
-                    // Resume timer if it failed
                     startLiveTimer(); 
                 }
             } catch (err) { 
