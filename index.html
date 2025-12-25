@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BrainyWorld | AI-Powered Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            color: #e2e8f0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .topic-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .topic-card:active {
+            background: rgba(59, 130, 246, 0.2);
+            transform: scale(0.95);
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            touch-action: manipulation;
+        }
+
+        .option-btn.selected {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .loader {
+            border-top-color: #3b82f6;
+            animation: spinner 0.6s linear infinite;
+        }
+
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(3600deg); }
+        }
+
+        .hidden { display: none; }
+        
+        /* Mobile Specific Overrides */
+        @media (max-width: 640px) {
+            .section-padding { padding: 1.5rem !important; }
+            h1 { font-size: 2.5rem !important; }
+            /* Fixed the incorrect property name 'grid-template-cols' to 'grid-template-columns' */
+            .topic-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto flex flex-col items-center">
+        <!-- Centered Header -->
+        <header class="w-full flex flex-col items-center text-center mb-6 md:mb-10 relative">
+            <div id="nav-actions" class="hidden absolute left-0 top-1/2 -translate-y-1/2 sm:static sm:translate-y-0 sm:mb-4">
+                <button onclick="fetchLeaderboard()" class="p-2 sm:px-4 sm:py-2 glass rounded-lg text-xs sm:text-sm hover:bg-white/5 transition-all">
+                    <i class="fa-solid fa-ranking-star sm:mr-2 text-amber-400"></i><span class="hidden sm:inline">Leaderboard</span>
+                </button>
+            </div>
+            
+            <h1 class="text-4xl md:text-5xl font-black tracking-tighter mb-1">
+                <span class="gradient-text">BRAINY</span>WORLD
+            </h1>
+            <p class="text-slate-400 font-medium tracking-widest uppercase text-[10px] md:text-xs">Unleash your intelligence</p>
+        </header>
+
+        <!-- Notification Box -->
+        <div id="notification" class="hidden fixed top-4 right-4 left-4 sm:left-auto z-[200] p-4 rounded-xl glass border-l-4 border-blue-500 shadow-2xl">
+            <p id="notification-text" class="text-sm font-medium"></p>
+        </div>
+
+        <!-- Section: Login -->
+        <section id="section-login" class="w-full glass rounded-2xl p-6 md:p-8 max-w-md mx-auto">
+            <h2 class="text-xl md:text-2xl font-bold mb-6 text-center text-blue-400">Welcome Back</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Username</label>
+                    <input type="text" id="login-username" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Your name">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Password</label>
+                    <input type="password" id="login-password" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="••••••••">
+                </div>
+                <button onclick="handleLogin()" class="w-full btn-primary py-4 rounded-xl font-bold text-lg mt-2">Sign In</button>
+            </div>
+        </section>
+
+        <!-- Section: Topic Selection -->
+        <section id="section-topic" class="hidden w-full glass rounded-2xl p-6 md:p-8 max-w-2xl mx-auto">
+            <div id="user-welcome" class="mb-2 text-lg font-semibold text-center text-blue-400"></div>
+            <h2 class="text-xl md:text-2xl font-bold mb-6 text-center">Choose Your Challenge</h2>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-6">
+                <div onclick="handleTopicSelect('MATH')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
+                    <i class="fa-solid fa-calculator text-xl md:text-2xl mb-2 text-blue-400"></i>
+                    <div class="font-bold text-xs md:text-sm">MATH</div>
+                </div>
+                <div onclick="handleTopicSelect('Computer')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
+                    <i class="fa-solid fa-laptop-code text-xl md:text-2xl mb-2 text-purple-400"></i>
+                    <div class="font-bold text-xs md:text-sm">Computer</div>
+                </div>
+                <div onclick="handleTopicSelect('Psychology')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
+                    <i class="fa-solid fa-brain text-xl md:text-2xl mb-2 text-pink-400"></i>
+                    <div class="font-bold text-xs md:text-sm">Psychology</div>
+                </div>
+                <div onclick="handleTopicSelect('Science')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
+                    <i class="fa-solid fa-flask text-xl md:text-2xl mb-2 text-green-400"></i>
+                    <div class="font-bold text-xs md:text-sm">Science</div>
+                </div>
+                <div onclick="handleTopicSelect('History')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
+                    <i class="fa-solid fa-landmark text-xl md:text-2xl mb-2 text-amber-400"></i>
+                    <div class="font-bold text-xs md:text-sm">History</div>
+                </div>
+                <div onclick="handleTopicSelect('General Knowledge')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
+                    <i class="fa-solid fa-earth-americas text-xl md:text-2xl mb-2 text-teal-400"></i>
+                    <div class="font-bold text-xs md:text-sm">GK</div>
+                </div>
+                <div onclick="handleTopicSelect('Literature')" class="topic-card p-4 md:p-6 rounded-2xl text-center">
+                    <i class="fa-solid fa-book-open text-xl md:text-2xl mb-2 text-red-400"></i>
+                    <div class="font-bold text-xs md:text-sm">Literature</div>
+                </div>
+                <div onclick="toggleCustomTopic()" class="topic-card p-4 md:p-6 rounded-2xl text-center">
+                    <i class="fa-solid fa-plus text-xl md:text-2xl mb-2 text-slate-400"></i>
+                    <div class="font-bold text-xs md:text-sm">Other</div>
+                </div>
+            </div>
+
+            <div id="custom-topic-input" class="hidden space-y-3 pt-4 border-t border-slate-700/50">
+                <input type="text" id="topic-name-custom" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Enter custom topic name...">
+                <button onclick="handleTopicSelect(document.getElementById('topic-name-custom').value)" class="w-full btn-primary py-4 rounded-xl font-bold">Start Custom Quiz</button>
+            </div>
+        </section>
+
+        <!-- Section: Quiz -->
+        <section id="section-quiz" class="hidden w-full glass rounded-2xl p-6 md:p-8 max-w-2xl mx-auto">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+                <span id="quiz-progress" class="text-blue-400 font-bold text-xs md:text-sm tracking-tight order-2 sm:order-1">Question 1 of 10</span>
+                <div class="h-2 w-full sm:w-32 bg-slate-800 rounded-full overflow-hidden order-1 sm:order-2">
+                    <div id="progress-bar" class="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out" style="width: 10%;"></div>
+                </div>
+            </div>
+            
+            <div class="mb-8 min-h-[80px]">
+                <p id="question-text" class="text-lg md:text-xl font-semibold leading-relaxed text-slate-100"></p>
+            </div>
+
+            <div id="options-container" class="grid gap-3 md:gap-4">
+                <!-- Options populated by JS -->
+            </div>
+
+            <div class="flex mt-8">
+                <button id="next-btn" onclick="handleNextQuestion()" class="w-full sm:w-auto sm:ml-auto px-10 py-4 btn-primary rounded-xl font-black text-xs md:text-sm tracking-widest uppercase">Next Question</button>
+            </div>
+        </section>
+
+        <!-- Section: Results -->
+        <section id="section-results" class="hidden w-full glass rounded-2xl p-8 md:p-10 max-w-md mx-auto text-center">
+            <div class="mb-6">
+                <div class="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-blue-500/20 border-4 border-blue-500 mb-4">
+                    <i class="fa-solid fa-trophy text-3xl md:text-4xl text-blue-400"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold mb-2">Quiz Complete!</h2>
+                <p class="text-slate-400 text-sm">Your performance:</p>
+            </div>
+            
+            <div id="final-score" class="text-6xl md:text-7xl font-black mb-8 gradient-text tracking-tighter">0/10</div>
+
+            <button onclick="resetToTopics()" class="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold transition-all">Try Another Topic</button>
+        </section>
+
+        <!-- Modal: Leaderboard -->
+        <div id="modal-leaderboard" class="hidden fixed inset-0 z-[110] bg-slate-950/95 flex items-center justify-center p-4">
+            <div class="glass w-full max-w-md rounded-2xl overflow-hidden">
+                <div class="p-5 border-b border-slate-700/50 flex justify-between items-center bg-white/5">
+                    <h2 class="text-lg font-bold"><i class="fa-solid fa-crown mr-2 text-amber-400"></i>Global Rankings</h2>
+                    <button onclick="document.getElementById('modal-leaderboard').classList.add('hidden')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                <div id="leaderboard-content" class="p-4 md:p-6 max-h-[70vh] overflow-y-auto">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Loader Overlay -->
+        <div id="loading-overlay" class="hidden fixed inset-0 z-[120] bg-slate-950/90 flex items-center justify-center p-6">
+            <div class="flex flex-col items-center text-center">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-slate-800 h-10 w-10 mb-4"></div>
+                <p class="text-blue-400 font-bold tracking-widest uppercase text-[10px] animate-pulse">Processing Quiz Data...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = "https://detector-beaver-ink-virgin.trycloudflare.com";
+        
+        let state = {
+            user: null,
+            quizzId: null,
+            quizzTopic: null,
+            questions: [],
+            currentQuestionIndex: 0,
+            userAnswers: [],
+            questionId: null,
+            currentAnswer: null
+        };
+
+        const showSection = (id) => {
+            ['section-login', 'section-topic', 'section-quiz', 'section-results'].forEach(s => {
+                document.getElementById(s).classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+            window.scrollTo(0, 0);
+        };
+
+        const toggleLoading = (show) => {
+            document.getElementById('loading-overlay').classList.toggle('hidden', !show);
+        };
+
+        const showNotify = (text) => {
+            const el = document.getElementById('notification');
+            document.getElementById('notification-text').innerText = text;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        };
+
+        function resetToTopics() {
+            state.questions = [];
+            state.currentQuestionIndex = 0;
+            state.userAnswers = [];
+            state.currentAnswer = null;
+            state.quizzId = null;
+            showSection('section-topic');
+        }
+
+        function toggleCustomTopic() {
+            const input = document.getElementById('custom-topic-input');
+            input.classList.toggle('hidden');
+            if(!input.classList.contains('hidden')) {
+                document.getElementById('topic-name-custom').focus();
+            }
+        }
+
+        async function fetchLeaderboard() {
+            document.getElementById('modal-leaderboard').classList.remove('hidden');
+            const content = document.getElementById('leaderboard-content');
+            content.innerHTML = '<p class="text-center py-8 animate-pulse text-sm text-slate-500 tracking-widest uppercase font-bold">Updating Rankings...</p>';
+            
+            try {
+                const response = await fetch(`${BASE_URL}/BRAINWORLD/Leaderboard`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const list = data.Leaderboard || [];
+                    
+                    if (list.length === 0) {
+                        content.innerHTML = '<p class="text-center py-8 text-slate-400">No entries yet.</p>';
+                        return;
+                    }
+                    
+                    let html = '<div class="space-y-3">';
+                    list.forEach((entry, idx) => {
+                        const rankColor = idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-orange-400' : 'text-slate-500';
+                        html += `
+                            <div class="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5">
+                                <div class="flex items-center space-x-4 overflow-hidden">
+                                    <span class="font-black text-lg ${rankColor} w-6 text-center">${idx + 1}</span>
+                                    <div class="flex flex-col truncate">
+                                        <span class="font-bold truncate text-slate-100 text-sm">${entry["User Name"] || 'Anonymous'}</span>
+                                        <span class="text-[9px] text-slate-500 uppercase font-black tracking-widest truncate">${entry["Quizz Topic"] || 'General'}</span>
+                                    </div>
+                                </div>
+                                <div class="font-black text-blue-400 ml-2">${entry["Score"] || 0}/10</div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    content.innerHTML = html;
+                }
+            } catch (err) {
+                content.innerHTML = '<p class="text-center text-red-400 py-4">Network Error</p>';
+            }
+        }
+
+        function parseQuestions(rawText) {
+            const questions = [];
+            const qBlocks = rawText.split(/\n\s*\d+\.\s+/).filter(q => q.trim().length > 0);
+            
+            qBlocks.forEach(block => {
+                const cleanedBlock = block.replace(/[A-D][\)\.]\s/g, '');
+                const lines = cleanedBlock.split('\n').filter(l => l.trim().length > 0);
+                
+                if (lines.length > 1) {
+                    const questionText = lines[0].trim();
+                    const options = lines.slice(1, 5).map(opt => opt.trim());
+                    while(options.length < 4) options.push(`-`);
+                    questions.push({ text: questionText, options });
+                }
+            });
+            return questions;
+        }
+
+        async function handleLogin() {
+            const user_name = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!user_name || !password) return showNotify("Enter credentials");
+
+            toggleLoading(true);
+            try {
+                const response = await fetch(`${BASE_URL}/BRAINYWORLD/Login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_name, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    state.user = { id: data.User_id, name: data.User_name };
+                    document.getElementById('user-welcome').innerText = `Hey, ${state.user.name}!`;
+                    document.getElementById('nav-actions').classList.remove('hidden');
+                    showSection('section-topic');
+                } else {
+                    showNotify("Invalid login");
+                }
+            } catch (err) {
+                showNotify("Server unreachable");
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        async function handleTopicSelect(topicName) {
+            if (!topicName) return showNotify("Select a topic");
+
+            toggleLoading(true);
+            try {
+                const response = await fetch(`${BASE_URL}/BRAINYWORLD/choose_quizz`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quizz_name: topicName, user_id: state.user.id })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    state.quizzId = data['Quizz Id'];
+                    state.quizzTopic = data['Quizz Choice'];
+                    await fetchQuestions();
+                }
+            } catch (err) {
+                showNotify("Network Error");
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        async function fetchQuestions() {
+            toggleLoading(true);
+            try {
+                const response = await fetch(`${BASE_URL}/BRAINYWORLD/question_ai`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quiz_id: state.quizzId })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    state.questions = parseQuestions(data.Questions);
+                    state.questionId = data['Question ID'];
+                    state.currentQuestionIndex = 0;
+                    state.userAnswers = [];
+                    renderQuestion();
+                    showSection('section-quiz');
+                }
+            } catch (err) {
+                showNotify("Error fetching questions");
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        function renderQuestion() {
+            const qObj = state.questions[state.currentQuestionIndex];
+            if (!qObj) return;
+
+            document.getElementById('question-text').innerText = qObj.text;
+            document.getElementById('quiz-progress').innerText = `Question ${state.currentQuestionIndex + 1} of 10`;
+            document.getElementById('progress-bar').style.width = `${(state.currentQuestionIndex + 1) * 10}%`;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            qObj.options.forEach((optText, index) => {
+                const val = index + 1;
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full p-4 md:p-5 rounded-2xl text-left font-semibold flex justify-between items-center group transition-all duration-150';
+                
+                const letter = String.fromCharCode(65 + index);
+                btn.innerHTML = `
+                    <div class="flex items-center pr-2">
+                        <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center mr-4 text-xs font-black group-hover:bg-blue-500 transition-colors">${letter}</span>
+                        <span class="text-slate-100 text-sm md:text-base leading-snug">${optText}</span>
+                    </div>
+                `;
+                
+                btn.onclick = () => {
+                    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    state.currentAnswer = val;
+                };
+                container.appendChild(btn);
+            });
+            
+            state.currentAnswer = null;
+            document.getElementById('next-btn').innerText = state.currentQuestionIndex === 9 ? "Finish Quiz" : "Next Question";
+        }
+
+        async function handleNextQuestion() {
+            if (state.currentAnswer === null) return showNotify("Pick an answer");
+            state.userAnswers.push(state.currentAnswer);
+
+            if (state.currentQuestionIndex < 9) {
+                state.currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                submitFinalResults();
+            }
+        }
+
+        async function submitFinalResults() {
+            toggleLoading(true);
+            try {
+                const response = await fetch(`${BASE_URL}/BRAINYWORLD/result_check`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: state.user.id,
+                        quizz_id: state.quizzId,
+                        question_id: state.questionId,
+                        answer: state.userAnswers
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('final-score').innerText = data.Result || "0/10";
+                    showSection('section-results');
+                }
+            } catch (err) {
+                showNotify("Sync error");
+            } finally {
+                toggleLoading(false);
+            }
+        }
+    </script>
+</body>
+</html>
